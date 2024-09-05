@@ -1,0 +1,13 @@
+[package]
+name = "miser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.38"
+lazy_static = "1.5.0"
+tokio = { version = "1.38", features = ["full"] }
+
+[profile.max]
+inherits = "release"
+lto = true

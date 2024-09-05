@@ -1,0 +1,11 @@
+请先安装nightly rust编译环境
+编译请运行 cargo build --release
+编译后的执行文件在 target/release里
+确保程序有权限访问 "/var/log/minser/connect.log" 和 /server 
+运行前运行mkdir /server &&mkdir -p /var/log/minser&&touch /var/log/minser/connect.log
+本程序应该只能在linux环境运作 监听0.0.0.0:9999
+默认网站根目录为/server
+以下全部为/server下的文件除了绝对目录
+默认页面index.html
+默认404页面404.html
+默认日志/var/log/minser/connect.log
