@@ -9,19 +9,8 @@ Miser is a simple HTTP server implemented in Rust, designed as a learning resour
   
 This project uses the GPL (GNU General Public License). The license file is located in the `license` directory of the project. Please read and comply with the terms of the license carefully.  
   
-**Special Note**: The `en_translation_license` file is an English translation of the GPL license, intended to help understand the contents of the license. However, this file does not have legal authority. If any misunderstanding or consequences arise due to this file, please take responsibility yourself. The project maintainers and creators are not responsible.  
-  
-## Project Structure (Bilingual Pointers)  
-  
-### English Version  
-- `src/`：Contains the source code of the project.  
-  - `main.rs`：Entry file of the project, containing the main loop of the server and request processing logic.  
-  - `handler.rs`：Specific logic for handling HTTP requests, such as parsing requests and generating responses.  
-  - `utils.rs`：Some useful utility functions, such as string processing and logging.  
-- `Cargo.toml`：Build configuration file of the project, containing dependencies and metadata.  
-- `license/`：Contains the license files of the project.  
-- `README.md`：This file (current file), containing the project's introduction, license information, project structure, etc. (English version).  
-  
+**Special Note**: The `zh_cn_translation_license` file is an chinese translation of the GPL license, intended to help understand the contents of the license. However, this file does not have legal authority. If any misunderstanding or consequences arise due to this file, please take responsibility yourself. The project maintainers and creators are not responsible.  
+
 ## Building and Running  
   
 1. Ensure you have Rust and Cargo installed.  
@@ -30,7 +19,7 @@ This project uses the GPL (GNU General Public License). The license file is loca
 4. Build the project: `cargo build`.  
 5. Run the server: `cargo run`.  
   
-The server listens on `localhost:8080` by default, and you can access it through a browser or curl.  
+The server listens on `localhost:25565` by default, and you can access it through a browser or curl.  
   
 ## Features  
   

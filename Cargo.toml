@@ -5,6 +5,7 @@ edition = "2021"
 repository = "https://github.com/54he/miser"
 authors = ["awahe4600 <winbug11@outlook.com>"]
 license = "GPL-3.0-or-later"
+description = "A simple server"
 license-file = "license"
 keywords=["simple","server"]
 [dependencies]
