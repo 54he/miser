@@ -1,6 +1,6 @@
 [package]
 name = "miser"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 repository = "https://github.com/54he/miser"
 authors = ["awahe4600 <winbug11@outlook.com>"]
