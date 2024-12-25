@@ -1,3 +1,29 @@
+/*
+ *                        _oo0oo_
+ *                       o8888888o
+ *                       88" . "88
+ *                       (| -_- |)
+ *                       0\  =  /0
+ *                     ___/`---'\___
+ *                   .' \\|     |// '.
+ *                  / \\|||  :  |||// \
+ *                 / _||||| -:- |||||- \
+ *                |   | \\\  - /// |   |
+ *                | \_|  ''\---/''  |_/ |
+ *                \  .-\__  '-'  ___/-. /
+ *              ___'. .'  /--.--\  `. .'___
+ *           ."" '<  `.___\_<|>_/___.' >' "".
+ *          | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ *          \  \ `_.   \_ __\ /__ _/   .-` /  /
+ *      =====`-.____`.___ \_____/___.-`___.-'=====
+ *                        `=---='
+ *
+ *                         * * *
+ *                         | | |
+ *      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *            赛博佛祖保佑       永不宕机     永无BUG
+ */
 #![allow(unstable_name_collisions)]
 use {
     chrono::Local,
@@ -6,7 +32,7 @@ use {
         io::Write,
     },
     tokio::{
-        io::{AsyncReadExt, AsyncWriteExt,BufReader},
+        io::{AsyncReadExt, AsyncWriteExt},
         net::{TcpListener, TcpStream},
         time::Instant,
     },
@@ -47,7 +73,7 @@ async fn main() {
 async fn main_process() {
     std::panic::set_hook(Box::new(|panic_info| {
         if let Some(s) = panic_info.payload_as_str() {
-            err_log(format!("PANIC FOR {s}"));
+            err_log(s);
         } else {
             err_log("can not log panic");
         }
@@ -67,25 +93,24 @@ async fn main_process() {
         });
     }
 }
-async fn process(socket: TcpStream, _client: std::net::SocketAddr) {
-    //info_log(format!("connect from {}", client));
+async fn process(socket: tokio::net::TcpStream, client: std::net::SocketAddr) {
+    info_log(format!("connect from {}", client));
     handle_client(socket).await;
-    //info_log(format!("connect close from {}", client));
+    info_log(format!("connect close from {}", client));
 }
-async fn handle_client(socket: TcpStream) {
-    let mut socket=BufReader::new(socket);
-    let mut buf=[0; 1024];
-    //let time_begin = Instant::now();
+async fn handle_client(mut socket: TcpStream) {
+    let mut buf = [0; 1024];
+    let time_begin = Instant::now();
     loop {
         let n = socket.read(&mut buf).await.expect("Buffer maybe Overflow");
         if n >= buf.len() {
-            panic!("Buffer maybe Overflow")
+            panic!("Buffer maybe Overflow ")
         }
         if n == 0 {
             break;
         }
         let client_read = String::from_utf8_lossy(&buf).to_string();
-    
+
         let get = format!("{}", (read_response(client_read)));
         let get = read_realget(get);
         let last_char = get.clone().pop().expect("can not get lastchar");
@@ -110,10 +135,10 @@ async fn handle_client(socket: TcpStream) {
             .await
             .expect("3 :can't write response");
     }
-    /*info_log(format!(
+    info_log(format!(
         "response complete in {:?}",
         Instant::now() - time_begin
-    ));*/
+    ));
 }
 async fn response(url: &str, status_line: &str) -> Vec<u8> {
     //info_log(file);
@@ -126,7 +151,7 @@ async fn response(url: &str, status_line: &str) -> Vec<u8> {
         _ => panic!("4: cant understand the http status_line "),
     };
 
-    let mut response_vec = if is_http_hender {
+    let response_vec = if is_http_hender {
         format!("{status_line}\r\n")
     } else {
         format!(
@@ -137,12 +162,11 @@ async fn response(url: &str, status_line: &str) -> Vec<u8> {
     .as_bytes()
     .to_vec();
     //合并http头和其余字节字节
-    response_vec.extend(contents);
-    response_vec
+    merge_vec_u8(response_vec, contents)
 }
-/*fn merge_vec_u8(a: Vec<u8>, b: Vec<u8>) -> Vec<u8> {
+fn merge_vec_u8(a: Vec<u8>, b: Vec<u8>) -> Vec<u8> {
     a.into_iter().chain(b.into_iter()).collect()
-}*/
+}
 //read_response函数能正常运行就别碰
 fn read_response(response: String) -> String {
     ((((&(((response
@@ -165,8 +189,7 @@ fn read_realget(response: String) -> String {
 }
 
 fn err_log<T: std::fmt::Display>(message: T) {
-    //这才配得上我们最高规格的日志!!
-    write_log(message, "======@#!!!!!ERROR!!!!!#@=====\n   @^ERR=>", true).unwrap();
+    write_log(message, "ERR!!", true).unwrap();
 }
 fn wran_log<T: std::fmt::Display>(message: T) {
     write_log(message, "WRAN", false).unwrap();
@@ -175,26 +198,21 @@ fn info_log<T: std::fmt::Display>(message: T) {
     write_log(message, "info", false).unwrap();
 }
 fn write_log<T: std::fmt::Display>(
-    //报错详细内容
     message: T,
-    //报错等级文本(用来给用户print看的，逻辑上不做限制，这里传入多花里胡哨都可以)
-    //但是这个是输出到日志和终端的别搞太长了
     mode_info: &str,
-    //是否使用eprintln即作为错误信息输出 真即使用 假即使用println
     mode: bool,
-	) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     let write_temp = format!(
         "{mode_info}[{}]:{}",
         Local::now().format("%Y-%m-%d %H:%M:%S"),
         message
     );
-    //作为错误信息输出或正常输出
+
     if mode {
         eprintln!("{}", write_temp)
     } else {
         println!("{}", write_temp)
     }
-    //写入日志
     write!(OpenOptions::new().append(true).open(LOG_FILE)?, "{}", mode)?;
     Ok(())
 }
