@@ -170,15 +170,15 @@ fn write_log<T: std::fmt::Display>(
     mode: bool,
 	) -> Result<(), Box<dyn std::error::Error>> {
     let write_temp = format!(
-        "{mode_info}[{}]:{}",
+        "{mode_info}[{}]:{}\n",
         Local::now().format("%Y-%m-%d %H:%M:%S"),
         message
     );
     //作为错误信息输出或正常输出
     if mode {
-        eprintln!("{}", write_temp)
+        eprint!("{}", write_temp)
     } else {
-        println!("{}", write_temp)
+        print!("{}", write_temp)
     }
     //写入日志
     write!(OpenOptions::new().append(true).open(LOG_FILE)?, "{}", write_temp)?;
