@@ -1,4 +1,5 @@
 #![allow(unstable_name_collisions)]
+#![feature(panic_payload_as_str)]
 use {
     chrono::Local,
     std::{
@@ -8,24 +9,9 @@ use {
     tokio::{
         io::{AsyncReadExt, AsyncWriteExt,BufReader},
         net::{TcpListener, TcpStream},
-        time::Instant,
     },
 };
-//注意 这里使用了在nightly里不稳定的api
-trait NIGHTLY {
-    fn payload_as_str(&self) -> Option<&str>;
-}
-impl NIGHTLY for std::panic::PanicHookInfo<'_> {
-    fn payload_as_str(&self) -> Option<&str> {
-        if let Some(s) = self.payload().downcast_ref::<&str>() {
-            Some(s)
-        } else if let Some(s) = self.payload().downcast_ref::<String>() {
-            Some(s)
-        } else {
-            None
-        }
-    }
-}
+//注意 这里使用了在nightly里不稳定的a
 const IP: &str = "0.0.0.0";
 const PORT: &str = "25565";
 //constHTTP_VERSION: &str = "HTTP/1.1 ";
@@ -195,6 +181,6 @@ fn write_log<T: std::fmt::Display>(
         println!("{}", write_temp)
     }
     //写入日志
-    write!(OpenOptions::new().append(true).open(LOG_FILE)?, "{}", mode)?;
+    write!(OpenOptions::new().append(true).open(LOG_FILE)?, "{}", write_temp)?;
     Ok(())
 }

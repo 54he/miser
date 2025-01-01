@@ -1,12 +1,11 @@
 [package]
 name = "miser"
-version = "0.1.2"
+version = "0.1.4"
 edition = "2021"
 repository = "https://github.com/54he/miser"
 authors = ["awahe4600 <winbug11@outlook.com>"]
 license = "GPL-3.0-or-later"
 description = "A simple server"
-license-file = "license"
 keywords=["simple","server"]
 [dependencies]
 chrono = "0.4.38"
