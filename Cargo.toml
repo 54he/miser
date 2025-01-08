@@ -9,6 +9,7 @@ description = "A simple server"
 keywords=["simple","server"]
 [dependencies]
 chrono = "0.4.38"
+mime_guess = "2.0.5"
 tokio = { version = "1.38", features = ["full"] }
 
 [profile.max]
