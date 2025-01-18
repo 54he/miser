@@ -6,12 +6,47 @@ use {
         fs::{self, OpenOptions},
         io::Write,
         path::Path,
+        sync::LazyLock,
         collections::HashMap,
     },
     tokio::{
         io::{AsyncReadExt, AsyncWriteExt,BufReader},
         net::{TcpListener, TcpStream},
     },
+};
+fn system_log(message:impl std::fmt::Display,mode: bool){
+   let write_temp = format!(
+        "[SYSTEM][{}]:{}\n",
+        Local::now().format("%Y-%m-%d %H:%M:%S"),
+        message
+    );
+    //作为错误信息输出或正常输出
+    if mode {
+        eprint!("{write_temp}")
+    } else {
+        print!("{write_temp}")
+    }
+}
+type LOG_FILE_OPEN<'a> = Option<std::fs::File>;
+static LOG_FILE_OPENER: LazyLock<LOG_FILE_OPEN>={
+    LazyLock::new(|| {
+        system_log(format!("try to open the LOG file in{LOG_FILE}...."),false);
+        let file_result = OpenOptions::new().append(true).open(LOG_FILE);
+        if let Ok(n) = file_result {
+            system_log("The log file is opened successfully",false);
+            Some(n)
+        } else if let Err(e) = file_result {
+            system_log(format!(
+                "==!!THE LOG FILE SYSTEM IS ERR CAUSE:{e}
+              \n    THAT MEANS LOGS CANNOT BE RECORDED!
+              \n    THIS WARNING WILL ONLY BE DISPLAYED ONCE!
+              \n!!=="
+            ),true);
+            None
+        } else {
+            panic!("Undefined operation, unable to recover.")
+        }
+    })
 };
 //注意 这里使用了在nightly里不稳定的a
 const IP: &str = "0.0.0.0";
@@ -25,6 +60,8 @@ const LOG_FILE: &str = "/var/log/minser/connect.log";
 
 #[tokio::main]
 async fn main() {
+    LazyLock::force(&LOG_FILE_OPENER);
+    system_log("The System Initialization and Self-Check has been Completed.",false);
     loop {
         tokio::spawn(async move {
             main_process().await;
@@ -200,17 +237,18 @@ fn write_log<T: std::fmt::Display>(
     mode: bool,
 	){
     let write_temp = format!(
-        "{mode_info}[{}]:{}\n",
+        "[{mode_info}][{}]:{}\n",
         Local::now().format("%Y-%m-%d %H:%M:%S"),
         message
     );
     //作为错误信息输出或正常输出
     if mode {
-        eprint!("{}", write_temp)
+        eprint!("{write_temp}")
     } else {
-        print!("{}", write_temp)
+        print!("{write_temp}")
     }
     //写入日志
-    write!(OpenOptions::new().append(true).open(LOG_FILE).expect("4: cant write to log file"), "{}", write_temp).expect("4: cant write to log file");
-
+    if let Some(mut n)=LOG_FILE_OPENER.as_ref(){
+      write!(n, "{write_temp}").expect("4: cant write to log file");
+    }
 }

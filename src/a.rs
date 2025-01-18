@@ -1,8 +1,4 @@
-#![allow(unstable_name_collisions)]
 #![feature(panic_payload_as_str)]
-use std::sync::OnceLock;
-use std::cell::RefCell;
-use std::borrow::BorrowMut;
 use {
     chrono::Local,
     std::{
@@ -21,7 +17,7 @@ type LOG_FILE_OPEN<'a> = Option<std::fs::File>;
 static mut FILE_RESULT: OnceLock<LOG_FILE_OPEN> = OnceLock::new();
 fn LOG_FILE_OPENER() -> RefCell<&'static LOG_FILE_OPEN> {
     RefCell::new(FILE_RESULT.get_or_init(|| {
-        info_log("try to open the LOG file in{LOG_FILE}....");
+        system_log(format!("try to open the LOG file in{LOG_FILE}...."));
         let mut file_result = OpenOptions::new().append(true).open(LOG_FILE);
         if let Ok(mut n) = file_result {
             info_log("The log file is opened successfully");
@@ -139,8 +135,14 @@ async fn handle_client(socket: TcpStream) {
         Instant::now() - time_begin
     ));*/
 }
+
 async fn response(url: &str, status_line: &str) -> Vec<u8> {
     //info_log(file);
+
+    let mime_type_guess=if let Some(n) = MimeGuess::from_path(Path::new(&url)).first(){
+     format!("{}", n)
+    }else{"text/html".into()};
+
     let (contents, is_http_hender): (Vec<u8>, bool) = match status_line {
         OK | NOT_FOUND => match fs::read(url) {
             Ok(n) => (n, false),
@@ -149,13 +151,13 @@ async fn response(url: &str, status_line: &str) -> Vec<u8> {
         MOVED_PERMANENTLY => (format!("Location: {url}\r\n\r\n").into(), true),
         _ => panic!("4: cant understand the http status_line "),
     };
-
     let mut response_vec = if is_http_hender {
         format!("{status_line}\r\n")
     } else {
         format!(
-            "{status_line}\r\nContent-Length: {}\r\n\r\n",
-            contents.len()
+            "{status_line}\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n",
+            mime_type_guess,
+            contents.len(),
         )
     }
     .as_bytes()
@@ -164,30 +166,6 @@ async fn response(url: &str, status_line: &str) -> Vec<u8> {
     response_vec.extend(contents);
     response_vec
 }
-/*fn merge_vec_u8(a: Vec<u8>, b: Vec<u8>) -> Vec<u8> {
-    a.into_iter().chain(b.into_iter()).collect()
-}*/
-//read_response函数能正常运行就别碰
-fn read_response(response: String) -> String {
-    ((((&(((response
-        .split_once('\n')
-        .expect(format!("3_RD :cant read response from '{}' ", response).as_str()))
-    .0)
-        .to_string())[4..])
-        .to_string())
-    .split_once(' ')
-    .unwrap())
-    .0)
-        .to_string()
-}
-fn read_realget(response: String) -> String {
-    if let Some(index) = response.find('?') {
-        (&response[..index]).to_string()
-    } else {
-        response
-    }
-}
-
 fn err_log<T: std::fmt::Display>(message: T) {
     //这才配得上我们最高规格的日志!!
     write_log(message, "======@#!!!!!ERROR!!!!!#@=====\n   @^ERR=>", true);
